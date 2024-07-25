@@ -20,6 +20,7 @@ In general, the primary goal of statistical modeling is to find a combination of
 ```{r packages, echo = FALSE}
 library(tidyverse)
 library(forcats)
+library(scales)
 ```
 
 
@@ -45,9 +46,10 @@ data <- data |>
 head(data)
 ```
 
-Next, we will update the levels of the factors and rename them.
+Next, we will update the levels of the factors by renaming them. Therefore, instead of numeric values for the levels the levels will have character values that make more sense.
 
 ```{r}
+# Recoding all of the factors
 data <- data |>
   select(where(is.factor), BMI) |>
   mutate(Diabetes_binary = fct_recode(Diabetes_binary,"No Diabetes" = "0",
@@ -86,6 +88,151 @@ data <- data |>
                                 "College 1-3 Years" = "5",
                                 "College Graduate" = "6"))
 ```
+
+Next, we will check for missing data in the data set.
+
+```{r}
+sum(is.na(data))
+```
+
+As we can see from this code, there are no missing values in our data set. Therefore, we are able to move forward with our exploratory data analysis without having to think of ways to work around missing values.
+
+# Summaries
+
+## Tables
+
+### Age Group vs. Proportion with Diabetes
+
+We will first look at the proportion of people with diabetes across each age group. This will give a better understanding as if age has an impact on the presence of diabetes.
+
+```{r}
+age_proportion_diabetes <- data |>
+  group_by(Age) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes")) |>
+  arrange(Age)
+age_proportion_diabetes
+```
+
+As we can see from this table, the proportion of people with diabetes in the age group increases as the age group gets older. This shows us that age can be an important factor in regards to predicting diabetes in a subject.
+
+### Education Level vs. Proportion with Diabetes
+
+```{r}
+education_proportion_diabetes <- data |>
+  group_by(Education) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes")) |>
+  arrange(Education)
+education_proportion_diabetes
+```
+
+As we can see from this table, the subjects with more education were less likely to have diabetes. There seems to be a negative correlation between these two variables. One possible explanation for this is that the subjects with little to no education most likely come from lower-income families who are not able to afford good healthcare or possibly live in food deserts.
+
+
+## Graphs
+
+Next, we will look at a graph of the proportion of people with diabetes that also have high blood pressure and the proportion of people with diabetes that do not have high blood pressure. This will show if there is a large difference in proportions betweeen these two groups.
+
+### Graph of High BP vs. Diabetes
+
+```{r}
+ high_BP_Proportion <- data |>
+  group_by(HighBP) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes"))
+ggplot(high_BP_Proportion, aes(x = HighBP, y = Proportion_Diabetes, fill = HighBP)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Proportion of Diabetes by BP Status",
+    x = "Does Subject Have High BP?",
+    y = "Proportion with Diabetes"
+  ) +
+  theme_minimal()
+
+```
+
+As we can see, the subjects with High BP are much more likely to have diabetes. Therefore, this variable could be an important predictor variable in our models.
+
+Now, we will do the same process with the high cholesterol variable, the smoker variable, and the physical activity variable to see if we see similar trends.
+
+### Graph of High Cholesterol vs. Diabetes
+
+```{r}
+high_Chol_Proportion <- data |>
+  group_by(HighChol) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes"))
+ggplot(high_Chol_Proportion, aes(x = HighChol, y = Proportion_Diabetes, fill = HighChol)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Proportion of Diabetes by Cholesterol Status",
+    x = "Does Subject Have High Cholesterol?",
+    y = "Proportion with Diabetes"
+  ) +
+  theme_minimal()
+```
+
+Here, we see a very similar pattern in this graph. This could indicate that cholesterol is important in predicting diabetes, but could also indicate some multicollinearity between our predictors, as someone who has high blood pressure is also likely to have high cholesterol.
+
+### Graph of Smokers vs. Diabetes
+
+```{r}
+Smokers_Proportion <- data |>
+  group_by(Smoker) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes"))
+ggplot(Smokers_Proportion, aes(x = Smoker, y = Proportion_Diabetes, fill = Smoker)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Proportion of Diabetes by Smoker Status",
+    x = "Is Subject a Smoker?",
+    y = "Proportion with Diabetes"
+  ) +
+  theme_minimal()
+```
+
+In this graph, we don't see as much of a gap between proportion of diabetes in the two different groups. This could mean that the binary smoker variable isn't as important of a predictor to diabetes than high cholesterol or high blood pressure.
+
+### Graph of Exercise vs. Diabetes
+
+```{r}
+Exercise_Proportion <- data |>
+  group_by(PhysActivity) |>
+  summarize(Proportion_Diabetes = mean(Diabetes_binary == "Diabetes"))
+ggplot(Exercise_Proportion, aes(x = PhysActivity, y = Proportion_Diabetes, fill = PhysActivity)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Proportion of Diabetes by Exercise Status",
+    x = "Does Subject Exercise?",
+    y = "Proportion with Diabetes"
+  ) +
+  theme_minimal()
+```
+
+As we can see from this graph, the subjects that exercise have about a 12% chance of having diabetes, whereas the subjects that do not exercise have about a 22% chance. This predictor could also be valuable in predicting whether or not a subject has diabetes.
+
+Next, we will make a boxplot of BMI for the group with diabetes and the BMI for the group without diabetes.
+
+### Boxplots of BMI vs. Diabetes
+
+```{r}
+ggplot(data, aes(x=Diabetes_binary, y=BMI, fill = Diabetes_binary)) +
+  geom_boxplot() +
+  labs(
+    title = "Boxplot Plot of BMI by Diabetes",
+    x = "Diabetes",
+    y = "BMI"
+  ) +
+  theme_minimal()
+```
+
+The middle 50% of BMI in the group with diabetes seems to be higher than the middle 50% BMI for the group with no diabetes. Therefore, we would expect a higher BMI to lead to a slightly higher chance of diabetes in the subject.
+
+
+
+
+
+
 
 
 
