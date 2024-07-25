@@ -1,0 +1,91 @@
+---
+title: "Final Project EDA File"
+author: "Luke Freudenheim"
+description: "This file will contain exploratory data analysis on diabetes in a telephone survey conducted by the CDC. The response variable we will be using in our analysis is a binary variable about whether the patient has diabetes or not. The other variables that we might use as predictors include BMI and other binary variables about having high BP, high cholesterol, or other common indicators of health."
+format: html
+---
+
+# Introduction
+
+The data we have for this report is from kaggle.com. The data set we are examining is from a health-related telephone survey that is collected annually from the CDC. There are 253,680 observations in the data set we will read in. The response variable that we will be looking at is a binary variable that represents whether or not the subject has diabetes. The goal of this project will be to build different models and compare them as to which model most effectively predicts the presence/absence of diabetes in a subject. We will use one numeric predictor in our models and that is BMI. The other variables we will analyze are some factor variables: Whether or not the subject has high blood pressure, whether or not the subject has high cholesterol, whether or not the subject is a smoker, whether or not the subject does any physical exercise, whether or not the subject consumed fruits/vegetables daily, the age group of the subject, and the highest education level of the subject. 
+
+In this file, we will do some EDA (Exploratory Data Analysis) on our data set. This is done on data sets to explore some relationships we have between some of the predictors we will use in our models and our response variable. We can use this to get a sense of which variables seem important in predicting whether or not a subject has diabetes. We will try to explore this data set by examining numerical summaries, tables, and graphs of variables given.
+
+In general, the primary goal of statistical modeling is to find a combination of predictor variables that are able to most accurately predict future values for a certain response variable. In this process, it also allows you to identify relationships between variables.
+
+# Data
+
+## Reading in the Data
+
+```{r packages, echo = FALSE}
+library(tidyverse)
+library(forcats)
+```
+
+
+```{r}
+data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+head(data)
+```
+
+We will now change some of the variables to factors.
+
+```{r}
+data <- data |>
+  mutate(Diabetes_binary = as.factor(Diabetes_binary),
+         HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol),
+         Smoker = as.factor(Smoker),
+         Age = as.factor(Age),
+         Education = as.factor(Education),
+         PhysActivity = as.factor(PhysActivity),
+         Fruits = as.factor(Fruits),
+         Veggies = as.factor(Veggies)
+  )
+head(data)
+```
+
+Next, we will update the levels of the factors and rename them.
+
+```{r}
+data <- data |>
+  select(where(is.factor), BMI) |>
+  mutate(Diabetes_binary = fct_recode(Diabetes_binary,"No Diabetes" = "0",
+                        "Diabetes" = "1"),
+         HighBP = fct_recode(HighBP, "No" = "0",
+                             "Yes" = "1"),
+         HighChol = fct_recode(HighChol, "No" = "0",
+                               "Yes" = "1"),
+         Smoker = fct_recode(Smoker, "No" = "0",
+                               "Yes" = "1"),
+         PhysActivity = fct_recode(PhysActivity, "No" = "0",
+                               "Yes" = "1"),
+         Fruits = fct_recode(Fruits, "No" = "0",
+                             "Yes" = "1"),
+         Veggies = fct_recode(Veggies, "No" = "0",
+                              "Yes" = "1"),
+         Age = fct_recode(Age, 
+                          "18-24" = "1",
+                          "25-29" = "2",
+                          "30-34" = "3",
+                          "35-39" = "4",
+                          "40-44" = "5",
+                          "45-49" = "6",
+                          "50-54" = "7",
+                          "55-59" = "8",
+                          "60-64" = "9",
+                          "65-69" = "10",
+                          "70-74" = "11",
+                          "75-79" = "12",
+                          "80+" = "13"),
+         Education = fct_recode(Education,
+                                "No school" = "1",
+                                "Grades 1-8" = "2",
+                                "Grades 9-11" = "3",
+                                "High School Graduate" = "4",
+                                "College 1-3 Years" = "5",
+                                "College Graduate" = "6"))
+```
+
+
+
