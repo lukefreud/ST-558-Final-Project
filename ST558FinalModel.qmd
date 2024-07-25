@@ -1,0 +1,135 @@
+---
+title: "ST558FinalModeling"
+author: "Luke Freudenheim"
+format: html
+---
+
+
+# Introduction
+
+```{r}
+library(tidyverse)
+library(caret)
+library(forcats)
+library(scales)
+library(ModelMetrics)
+```
+
+
+In this file, we will attempt to find the best statistical model to predict the presence/absence of diabetes in a subject. We will first split the data into a training set and testing set. The training set will be the set of data that the models are trained on. The testing set will be the set of data the models will make predictions about. We will compare the different models with respect to accuracy in predicting the response variable in the test set. The three different types of models we will fit are logistic regression models, classification tree models, and random forest models. In each type of model, we will use a different set of predictors, and compare the sets of predictors with each other to find the most accurate model. In the classfication tree and random forest models, we will use cross validation to find the best tuning parameters to use in the model.
+
+## Reading in and Shaping Data
+
+```{r}
+data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+data <- data |>
+  mutate(Diabetes_binary = as.factor(Diabetes_binary),
+         HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol),
+         Smoker = as.factor(Smoker),
+         Age = as.factor(Age),
+         Education = as.factor(Education),
+         PhysActivity = as.factor(PhysActivity),
+         Fruits = as.factor(Fruits),
+         Veggies = as.factor(Veggies)
+  )
+data <- data |>
+  select(where(is.factor), BMI) |>
+  mutate(Diabetes_binary = fct_recode(Diabetes_binary,"NoDiabetes" = "0",
+                        "Diabetes" = "1"),
+         HighBP = fct_recode(HighBP, "No" = "0",
+                             "Yes" = "1"),
+         HighChol = fct_recode(HighChol, "No" = "0",
+                               "Yes" = "1"),
+         Smoker = fct_recode(Smoker, "No" = "0",
+                               "Yes" = "1"),
+         PhysActivity = fct_recode(PhysActivity, "No" = "0",
+                               "Yes" = "1"),
+         Fruits = fct_recode(Fruits, "No" = "0",
+                             "Yes" = "1"),
+         Veggies = fct_recode(Veggies, "No" = "0",
+                              "Yes" = "1"),
+         Age = fct_recode(Age, 
+                          "18-24" = "1",
+                          "25-29" = "2",
+                          "30-34" = "3",
+                          "35-39" = "4",
+                          "40-44" = "5",
+                          "45-49" = "6",
+                          "50-54" = "7",
+                          "55-59" = "8",
+                          "60-64" = "9",
+                          "65-69" = "10",
+                          "70-74" = "11",
+                          "75-79" = "12",
+                          "80+" = "13"),
+         Education = fct_recode(Education,
+                                "Noschool" = "1",
+                                "Grades 1-8" = "2",
+                                "Grades 9-11" = "3",
+                                "High School Graduate" = "4",
+                                "College 1-3 Years" = "5",
+                                "College Graduate" = "6"))
+```
+
+## Splitting Data
+
+Here, we will split the data into a training set and a testing set. We will put 70% of the data set into the training set and 30% of the data into the testing set.
+
+```{r}
+# Reproducability
+set.seed(98)
+#indices to split on
+train <- sample(1:nrow(data), size = nrow(data)*0.7)
+test <- setdiff(1:nrow(data), train)
+#subset
+Diabetes_Train <- data[train, ]
+Diabetes_Test <- data[test, ]
+```
+
+## Describing Log Loss
+
+In our models the metric we will use to compare models is Log Loss. Log Loss is a metric that is used to evaluate how well probabilistic classifiers perform. This metric is sometimes more effective than accuracy because it takes into account how uncertain predictions are. For example, if a prediction from a model is very close between selecting diabetes and not selecting diabetes (say it's 52% likely the subject has diabetes and 48% likely they don't from the model), then if that prediction is incorrect it is penalized less than a predictions that is almost certain one way or the other (say it's 90% likely the subject has diabetes and 10% likely they don't from the model) and is wrong. The lower the value of Log Loss, the better the model is.
+
+## Logistic Regression Model
+
+A logistic regression model is a supervised learning algorithm that is used for a binary response variable.
+
+### First Logisitic Regression Model
+```{r}
+trctrl <- trainControl(method = "repeatedcv", number = 5, classProbs = TRUE, summaryFunction = mnLogLoss)
+Logistic_Model_1 <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + Fruits, data = Diabetes_Train, 
+                 method = "glm",
+                 family = "binomial",
+                 trControl=trctrl,
+                 metric = "logLoss",
+                 preProcess = c("center", "scale"))
+Logistic_Model_1
+```
+
+### Second Logisitic Regression Model (Fruit dropped, Exercise added)
+
+```{r}
+Logistic_Model_2 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity, data = Diabetes_Train, 
+                 method = "glm",
+                 family = "binomial",
+                 trControl=trctrl,
+                 metric = "logLoss",
+                 preProcess = c("center", "scale"))
+Logistic_Model_2
+```
+
+### Third Logistic Regression Model (Age added)
+
+```{r}
+Logistic_Model_3 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train, 
+                 method = "glm",
+                 family = "binomial",
+                 trControl=trctrl,
+                 metric = "logLoss",
+                 preProcess = c("center", "scale"))
+Logistic_Model_3
+```
+
+
+
