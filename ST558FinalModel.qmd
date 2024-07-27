@@ -16,7 +16,7 @@ library(ModelMetrics)
 ```
 
 
-In this file, we will attempt to find the best statistical model to predict the presence/absence of diabetes in a subject. We will first split the data into a training set and testing set. The training set will be the set of data that the models are trained on. The testing set will be the set of data the models will make predictions about. We will compare the different models with respect to accuracy in predicting the response variable in the test set. The three different types of models we will fit are logistic regression models, classification tree models, and random forest models. In each type of model, we will use a different set of predictors, and compare the sets of predictors with each other to find the most accurate model. In the classfication tree and random forest models, we will use cross validation to find the best tuning parameters to use in the model.
+In this file, we will attempt to find the best statistical model to predict the presence/absence of diabetes in a subject. We will first split the data into a training set and testing set. The training set will be the set of data that the models are trained on. The testing set will be the set of data the models will make predictions about. We will compare the different models with respect to accuracy in predicting the response variable in the test set. The three different types of models we will fit are logistic regression models, classification tree models, and random forest models. In each logistic regression model, we will use a different set of predictors, and compare the sets of predictors with each other to find the most accurate model. In the classification tree and random forest models, we will use the set of predictors that performed best in logistic regression and then use cross validation to find the best tuning parameters to use in the model.
 
 ## Reading in and Shaping Data
 
@@ -89,14 +89,18 @@ Diabetes_Test <- data[test, ]
 
 ## Describing Log Loss
 
-In our models the metric we will use to compare models is Log Loss. Log Loss is a metric that is used to evaluate how well probabilistic classifiers perform. This metric is sometimes more effective than accuracy because it takes into account how uncertain predictions are. For example, if a prediction from a model is very close between selecting diabetes and not selecting diabetes (say it's 52% likely the subject has diabetes and 48% likely they don't from the model), then if that prediction is incorrect it is penalized less than a predictions that is almost certain one way or the other (say it's 90% likely the subject has diabetes and 10% likely they don't from the model) and is wrong. The lower the value of Log Loss, the better the model is.
+In our models the metric we will use to compare models is Log Loss. Log Loss is a metric that is used to evaluate how well probabilistic classifiers perform. This metric is sometimes more effective than accuracy because it takes into account how uncertain predictions are. For example, if a prediction from a model is very close between selecting diabetes and not selecting diabetes (say it's 52% likely the subject has diabetes and 48% likely they don't from the model), then if that prediction is incorrect it is penalized less than a predictions that is almost certain one way or the other (say it's 90% likely the subject has diabetes and 10% likely they don't from the model) and is wrong. The lower the value of Log Loss, the better the model is. Accuracy does not have that capability, and only determines whether or not the model correctly predicted the observation. Therefore, we will be using log loss to compare our models.
 
 ## Logistic Regression Model
 
-A logistic regression model is a supervised learning algorithm that is used for a binary response variable.
+### Description
+
+A logistic regression model is a supervised learning algorithm that is used for a binary response variable. The algorithm models the log-odds of an event happening by transforming the linear combination of predictors into a probability between 0 and 1. We are using it in this case because we have a response variable that has only 2 categories (the subject either has diabetes or they don't have diabetes). 
 
 ### First Logisitic Regression Model
+
 ```{r}
+set.seed(98)
 trctrl <- trainControl(method = "repeatedcv", number = 5, classProbs = TRUE, summaryFunction = mnLogLoss)
 Logistic_Model_1 <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + Fruits, data = Diabetes_Train, 
                  method = "glm",
@@ -105,11 +109,15 @@ Logistic_Model_1 <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educati
                  metric = "logLoss",
                  preProcess = c("center", "scale"))
 Logistic_Model_1
+summary(Logistic_Model_1)
 ```
+
+As we can see from the output, our logLoss for this model is .3468. Looking at the summary, we see that the fruits variable is insignificant. For the next model, we will take this variable out and insert the exercise binary variable.
 
 ### Second Logisitic Regression Model (Fruit dropped, Exercise added)
 
 ```{r}
+set.seed(98)
 Logistic_Model_2 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity, data = Diabetes_Train, 
                  method = "glm",
                  family = "binomial",
@@ -117,11 +125,15 @@ Logistic_Model_2 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educatio
                  metric = "logLoss",
                  preProcess = c("center", "scale"))
 Logistic_Model_2
+summary(Logistic_Model_2)
 ```
+
+The logLoss for this model is .3457, which is slightly lower than the .3468 from the previous model, indicating this model is slightly better. In the summary, we see that all of the variables are significant to the model, so we will not remove any of these predictors and will add age as another predictor.
 
 ### Third Logistic Regression Model (Age added)
 
 ```{r}
+set.seed(98)
 Logistic_Model_3 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train, 
                  method = "glm",
                  family = "binomial",
@@ -131,5 +143,49 @@ Logistic_Model_3 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educatio
 Logistic_Model_3
 ```
 
+In this model with age added as a predictor, we see that the logLoss is .3384. This is lower than the last two models, so this third model is the best in terms of logLoss. Therefore, we will use this model for our prediction of the test set of data.
 
+## Classification Tree Models
+
+### Description
+
+# ADD THIS IN
+
+```{r}
+set.seed(98)
+Class_Tree_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train, 
+                 method = "rpart",
+                 trControl=trctrl,
+                 metric = "logLoss",
+                 preProcess = c("center", "scale"),
+                 tuneGrid = expand.grid(cp = seq(0,0.01, by=0.001)))
+Class_Tree_Model
+```
+
+In order to minimize logLoss, the best model was with the tuning parameter cp = 0. Therefore, this is the model we will use in our predictions of the test set. The logLoss of this model was .358.
+
+## Random Forest Models
+
+### Description
+
+Random forest models are a type of regression/classification algorithm. In random forest models, the data is first broken down into random subsets (bootstrap samples). After this, multiple trees are created for each bootstrap sample, and each tree has a different set of predictors within it that are randomly selected. Each of these trees make predictions for the bootstrap samples, and then these predictions are averaged to determine the final predictions of each sample. Some reasons that random forest models are implemented is they are typically good for prediction and they don't allow 1-2 predictors to overpower the model.
+
+```{r}
+set.seed(98)
+Random_Forest_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train,
+                 method = "rf",
+                 trControl=trctrl,
+                 metric = "logLoss",
+                 preProcess = c("center", "scale"),
+                 tuneGrid = data.frame(mtry = 6:8), ntree = 100)
+Random_Forest_Model
+```
+
+For the random forest model, the tuning parameter that was optimal for the model was mtry = 8. We will use this tuning parameter for the predictions of the test set. The logLOss was 1.92 for the model with this parameter.
+
+## Final Model Selection
+
+```{r}
+
+```
 
