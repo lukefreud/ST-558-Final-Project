@@ -77,7 +77,7 @@ data <- data |>
 Here, we will split the data into a training set and a testing set. We will put 70% of the data set into the training set and 30% of the data into the testing set.
 
 ```{r}
-# Reproducability
+# Reproducibility
 set.seed(98)
 #indices to split on
 train <- sample(1:nrow(data), size = nrow(data)*0.7)
@@ -95,12 +95,11 @@ In our models the metric we will use to compare models is Log Loss. Log Loss is 
 
 ### Description
 
-A logistic regression model is a supervised learning algorithm that is used for a binary response variable. The algorithm models the log-odds of an event happening by transforming the linear combination of predictors into a probability between 0 and 1. We are using it in this case because we have a response variable that has only 2 categories (the subject either has diabetes or they don't have diabetes). 
+A logistic regression model is a supervised learning algorithm that is used for a binary response variable. The algorithm models the log-odds of an event happening by transforming the linear combination of predictors into a probability between 0 and 1. We are using it in this case because we have a response variable that has only 2 categories (the subject either has diabetes or they don't have diabetes). One limitation of logistic regression is that there is an assumption of linearity between the predictors and the response variable.
 
 ### First Logisitic Regression Model
 
 ```{r}
-set.seed(98)
 trctrl <- trainControl(method = "repeatedcv", number = 5, classProbs = TRUE, summaryFunction = mnLogLoss)
 Logistic_Model_1 <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + Fruits, data = Diabetes_Train, 
                  method = "glm",
@@ -117,7 +116,6 @@ As we can see from the output, our logLoss for this model is .3468. Looking at t
 ### Second Logisitic Regression Model (Fruit dropped, Exercise added)
 
 ```{r}
-set.seed(98)
 Logistic_Model_2 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity, data = Diabetes_Train, 
                  method = "glm",
                  family = "binomial",
@@ -133,7 +131,6 @@ The logLoss for this model is .3457, which is slightly lower than the .3468 from
 ### Third Logistic Regression Model (Age added)
 
 ```{r}
-set.seed(98)
 Logistic_Model_3 <-train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train, 
                  method = "glm",
                  family = "binomial",
@@ -149,10 +146,9 @@ In this model with age added as a predictor, we see that the logLoss is .3384. T
 
 ### Description
 
-# ADD THIS IN
+Classification tree models are a form of predictive modeling where the predictor space is split up into different regions. These models are used for classifying which group the response variable is in. There are different predictions within each region in the predictor space. In each of these regions, the prediction made is the most prevalent class of the response variable. One advantage of classification tree models is that they can account for nonlinear trends in data.
 
 ```{r}
-set.seed(98)
 Class_Tree_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train, 
                  method = "rpart",
                  trControl=trctrl,
@@ -162,7 +158,7 @@ Class_Tree_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educati
 Class_Tree_Model
 ```
 
-In order to minimize logLoss, the best model was with the tuning parameter cp = 0. Therefore, this is the model we will use in our predictions of the test set. The logLoss of this model was .358.
+In order to minimize logLoss, the best model was with the tuning parameter cp = 0. Therefore, this is the model we will use in our predictions of the test set. We can see the logLoss of this model in the output above.
 
 ## Random Forest Models
 
@@ -171,7 +167,6 @@ In order to minimize logLoss, the best model was with the tuning parameter cp = 
 Random forest models are a type of regression/classification algorithm. In random forest models, the data is first broken down into random subsets (bootstrap samples). After this, multiple trees are created for each bootstrap sample, and each tree has a different set of predictors within it that are randomly selected. Each of these trees make predictions for the bootstrap samples, and then these predictions are averaged to determine the final predictions of each sample. Some reasons that random forest models are implemented is they are typically good for prediction and they don't allow 1-2 predictors to overpower the model.
 
 ```{r}
-set.seed(98)
 Random_Forest_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train,
                  method = "rf",
                  trControl=trctrl,
@@ -181,11 +176,40 @@ Random_Forest_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educ
 Random_Forest_Model
 ```
 
-For the random forest model, the tuning parameter that was optimal for the model was mtry = 8. We will use this tuning parameter for the predictions of the test set. The logLOss was 1.92 for the model with this parameter.
+For the random forest model, the tuning parameter that was optimal for the model was mtry = 8. We will use this tuning parameter for the predictions of the test set. We can see the logLoss of this model in the output above.
 
-## Final Model Selection
+## Predictions and Final Model Selection
+
+### Predictions Using the Logistic Regression Model
+
+First, we will use the best logistic regression model fit in order to make predictions on the response variable in the test set of data. We will make a confusion matrix to look at the accuracy of this model.
 
 ```{r}
-
+LR_predictions <- predict(Logistic_Model_3, newdata = Diabetes_Test)
+caret::confusionMatrix(data = Diabetes_Test$Diabetes_binary, reference = LR_predictions)
 ```
+
+The accuracy of the best logistic regression model was 86.32%. Next, we will see how well the classification tree model performs in predicting the presence/absence of diabetes in the test set.
+
+### Classification Tree Model Predictions
+
+```{r}
+CT_predictions <- predict(Class_Tree_Model, newdata = Diabetes_Test)
+caret::confusionMatrix(data = Diabetes_Test$Diabetes_binary, reference = CT_predictions)
+```
+
+The accuracy of the classification tree model was 85.64%. This is slightly lower than the accuracy for the logistic regression model was. Lastly, we will see how accurate the random forest model is in predicting the response variable in the test data.
+
+### Random Forest Model Predictions
+
+```{r}
+RF_predictions <- predict(Random_Forest_Model, newdata = Diabetes_Test)
+caret::confusionMatrix(data = Diabetes_Test$Diabetes_binary, reference = RF_predictions)
+```
+
+The accuracy of the random forest model in predicting the absence/presence of diabetes in the test set was 86.17%. This accuracy was higher than the accuracy from the classification tree model, but lower than the accuracy from the logistic regression model.
+
+## Overall "Best" Model and Discussion of Results
+
+Overall, the best model in terms of accuracy in the predicting of the test set was the logistic regression model. However, the accuracy from this model was 86.32%, which is lower than the No Information Rate of 96.96%. Therefore, saying every subject in the testing set does not have diabetes would actually have more accuracy than these models. Therefore, we would probably need to look into ways to fine tune these models more or add to them before using them.
 
