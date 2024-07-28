@@ -492,7 +492,7 @@ The final value used for the model was cp = 0.</code></pre>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>trctrl,</span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">preProcess =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>),</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>), <span class="at">ntree =</span> <span class="dv">25</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>), <span class="at">ntree =</span> <span class="dv">50</span>)</span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>Random_Forest_Model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Random Forest 
@@ -507,9 +507,9 @@ Summary of sample sizes: 142061, 142061, 142061, 142061, 142060
 Resampling results across tuning parameters:
 
   mtry  logLoss 
-  6     2.582144
-  7     2.462269
-  8     2.372428
+  6     2.305798
+  7     2.207445
+  8     2.111053
 
 logLoss was used to select the optimal model using the smallest value.
 The final value used for the model was mtry = 8.</code></pre>
@@ -605,26 +605,26 @@ Prediction   NoDiabetes Diabetes
 
             Reference
 Prediction   NoDiabetes Diabetes
-  NoDiabetes      64368     1262
-  Diabetes         9308     1166
+  NoDiabetes      64470     1160
+  Diabetes         9362     1112
                                           
-               Accuracy : 0.8611          
-                 95% CI : (0.8586, 0.8636)
-    No Information Rate : 0.9681          
+               Accuracy : 0.8617          
+                 95% CI : (0.8593, 0.8642)
+    No Information Rate : 0.9701          
     P-Value [Acc &gt; NIR] : 1               
                                           
-                  Kappa : 0.136           
+                  Kappa : 0.1319          
                                           
  Mcnemar's Test P-Value : &lt;2e-16          
                                           
-            Sensitivity : 0.8737          
-            Specificity : 0.4802          
-         Pos Pred Value : 0.9808          
-         Neg Pred Value : 0.1113          
-             Prevalence : 0.9681          
-         Detection Rate : 0.8458          
+            Sensitivity : 0.8732          
+            Specificity : 0.4894          
+         Pos Pred Value : 0.9823          
+         Neg Pred Value : 0.1062          
+             Prevalence : 0.9701          
+         Detection Rate : 0.8471          
    Detection Prevalence : 0.8624          
-      Balanced Accuracy : 0.6769          
+      Balanced Accuracy : 0.6813          
                                           
        'Positive' Class : NoDiabetes      
                                           </code></pre>
