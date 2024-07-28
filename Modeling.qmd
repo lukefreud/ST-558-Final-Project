@@ -172,7 +172,7 @@ Random_Forest_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Educ
                  trControl=trctrl,
                  metric = "logLoss",
                  preProcess = c("center", "scale"),
-                 tuneGrid = data.frame(mtry = 6:8), ntree = 100)
+                 tuneGrid = data.frame(mtry = 6:8), ntree = 50)
 Random_Forest_Model
 ```
 
