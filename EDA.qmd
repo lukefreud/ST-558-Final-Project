@@ -228,3 +228,6 @@ ggplot(data, aes(x=Diabetes_binary, y=BMI, fill = Diabetes_binary)) +
 
 The middle 50% of BMI in the group with diabetes seems to be higher than the middle 50% BMI for the group with no diabetes. Therefore, we would expect a higher BMI to lead to a slightly higher chance of diabetes in the subject.
 
+# Link to Modeling Page
+
+[Click here for the Modeling Page](Modeling.html)
