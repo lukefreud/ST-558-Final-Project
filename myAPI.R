@@ -3,6 +3,7 @@ library(plumber)
 library(leaflet)
 library(tidyverse)
 library(forcats)
+library(DescTools)
 
 # Reading in the data
 
@@ -60,26 +61,37 @@ Logistic_Model_3 <-glm(Diabetes_binary ~ HighBP + HighChol + Smoker + Education 
                        family = binomial())
 
 #* Choose a predictor
-#* @param predictor
+#* @param HighBP HighBP
+#* @param HighChol HighChol
+#* @param Smoker Smoker
+#* @param Education Education
+#* @param BMI BMI
+#* @param Veggies Veggies
+#* @param PhysActivity PhysActivity
+#* @param Age Age
 #* @get /pred
-function(predictor, data = Diabetes_data) {
-  if (is.numeric(data[[predictor]])) {
-    value <- mean(data[[predictor]])
-    message <- paste("The mean of", predictor, "is", value)
-    return(message)
-  } else if (is.factor(data[[predictor]])) {
-    table <- table(data[[predictor]])
-    max <- names(table)[which.max(table)]
-    message <- paste("The most frequent class of", predictor, "is", max)
-    return(paste(message))
+function(HighBP = as.character(Mode(Diabetes_data$HighBP)[[1]]), HighChol = as.character(Mode(Diabetes_data$HighBP)[[1]]), 
+         Smoker = as.character(Mode(Diabetes_data$Smoker)[[1]]), Education = as.character(Mode(Diabetes_data$Education)[[1]]),
+         BMI = 28.3823, Veggies = as.character(Mode(Diabetes_data$Veggies)[[1]]), 
+         PhysActivity = as.character(Mode(Diabetes_data$PhysActivity)[[1]]), Age = as.character(Mode(Diabetes_data$Age)[[1]])) {
+  BMI <- as.numeric(BMI)
+  newdata <- data.frame(HighBP = HighBP, HighChol = HighChol, Smoker = Smoker, Education = Education,
+                        BMI = BMI, Veggies = Veggies, PhysActivity = PhysActivity, Age = Age)
+  output <- predict(Logistic_Model_3, newdata)
+  odds <- exp(output)
+  if(odds >.5) {
+    return("Predicted to have Diabetes")
+  } else if (odds > 0) {
+    return("Predicted to have No Diabetes")
   } else {
-    stop("Invalid predictor.")
+    stop("Invalid odds")
   }
 }
 
-#http://localhost:PORT/pred?predictor="HighBP"
-#http://localhost:PORT/pred?predictor="BMI"
-#http://localhost:PORT/pred?predictor="Education"
+#http://localhost:PORT/pred?
+#http://localhost:PORT/pred?HighBP=Yes&HighChol=Yes&Smoker=Yes&BMI=40
+#http://localhost:PORT/pred?HighBP=Yes&PhysActivity=No&Veggies=No
+
 
 #* @get /info
 function(){

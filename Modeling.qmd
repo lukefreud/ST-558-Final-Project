@@ -209,7 +209,7 @@ RF_predictions <- predict(Random_Forest_Model, newdata = Diabetes_Test)
 caret::confusionMatrix(data = Diabetes_Test$Diabetes_binary, reference = RF_predictions)
 ```
 
-The accuracy of the random forest model in predicting the absence/presence of diabetes in the test set was 86.17%. This accuracy was higher than the accuracy from the classification tree model, but lower than the accuracy from the logistic regression model.
+The accuracy of the random forest model in predicting the absence/presence of diabetes in the test set was 86.22%. This accuracy was higher than the accuracy from the classification tree model, but lower than the accuracy from the logistic regression model.
 
 ## Overall "Best" Model and Discussion of Results
 
