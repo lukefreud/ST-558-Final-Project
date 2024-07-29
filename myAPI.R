@@ -59,6 +59,7 @@ Diabetes_data <- data |>
 Logistic_Model_3 <-glm(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_data,
                        family = binomial())
 
+#* Choose a predictor
 #* @param predictor
 #* @get /pred
 function(predictor, data = Diabetes_data) {

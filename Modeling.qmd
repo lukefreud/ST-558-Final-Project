@@ -168,12 +168,13 @@ In order to minimize logLoss, the best model was with the tuning parameter cp = 
 Random forest models are a type of regression/classification algorithm. In random forest models, the data is first broken down into random subsets (bootstrap samples). After this, multiple trees are created for each bootstrap sample, and each tree has a different set of predictors within it that are randomly selected. Each of these trees make predictions for the bootstrap samples, and then these predictions are averaged to determine the final predictions of each sample. Some reasons that random forest models are implemented is they are typically good for prediction and they don't allow 1-2 predictors to overpower the model.
 
 ```{r}
+trctrlrf <- trainControl(method = "repeatedcv", number = 3, classProbs = TRUE, summaryFunction = mnLogLoss)
 Random_Forest_Model <- train(Diabetes_binary ~ HighBP + HighChol + Smoker + Education + BMI + Veggies + PhysActivity + Age, data = Diabetes_Train,
                  method = "rf",
-                 trControl=trctrl,
+                 trControl=trctrlrf,
                  metric = "logLoss",
                  preProcess = c("center", "scale"),
-                 tuneGrid = data.frame(mtry = 6:8), ntree = 50)
+                 tuneGrid = data.frame(mtry = 6:8), ntree = 100)
 Random_Forest_Model
 ```
 

@@ -493,13 +493,14 @@ The final value used for the model was cp = 0.</code></pre>
 <h3 class="anchored" data-anchor-id="description-2">Description</h3>
 <p>Random forest models are a type of regression/classification algorithm. In random forest models, the data is first broken down into random subsets (bootstrap samples). After this, multiple trees are created for each bootstrap sample, and each tree has a different set of predictors within it that are randomly selected. Each of these trees make predictions for the bootstrap samples, and then these predictions are averaged to determine the final predictions of each sample. Some reasons that random forest models are implemented is they are typically good for prediction and they don’t allow 1-2 predictors to overpower the model.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>Random_Forest_Model <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP <span class="sc">+</span> HighChol <span class="sc">+</span> Smoker <span class="sc">+</span> Education <span class="sc">+</span> BMI <span class="sc">+</span> Veggies <span class="sc">+</span> PhysActivity <span class="sc">+</span> Age, <span class="at">data =</span> Diabetes_Train,</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"rf"</span>,</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>trctrl,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">preProcess =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>),</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>), <span class="at">ntree =</span> <span class="dv">50</span>)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>Random_Forest_Model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>trctrlrf <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"repeatedcv"</span>, <span class="at">number =</span> <span class="dv">3</span>, <span class="at">classProbs =</span> <span class="cn">TRUE</span>, <span class="at">summaryFunction =</span> mnLogLoss)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>Random_Forest_Model <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> HighBP <span class="sc">+</span> HighChol <span class="sc">+</span> Smoker <span class="sc">+</span> Education <span class="sc">+</span> BMI <span class="sc">+</span> Veggies <span class="sc">+</span> PhysActivity <span class="sc">+</span> Age, <span class="at">data =</span> Diabetes_Train,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"rf"</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>trctrlrf,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">preProcess =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>),</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>), <span class="at">ntree =</span> <span class="dv">100</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>Random_Forest_Model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Random Forest 
 
@@ -508,14 +509,14 @@ The final value used for the model was cp = 0.</code></pre>
      2 classes: 'NoDiabetes', 'Diabetes' 
 
 Pre-processing: centered (23), scaled (23) 
-Resampling: Cross-Validated (5 fold, repeated 1 times) 
-Summary of sample sizes: 142061, 142061, 142061, 142061, 142060 
+Resampling: Cross-Validated (3 fold, repeated 1 times) 
+Summary of sample sizes: 118384, 118385, 118383 
 Resampling results across tuning parameters:
 
   mtry  logLoss 
-  6     2.305798
-  7     2.207445
-  8     2.111053
+  6     1.964614
+  7     1.895309
+  8     1.818852
 
 logLoss was used to select the optimal model using the smallest value.
 The final value used for the model was mtry = 8.</code></pre>
@@ -611,26 +612,26 @@ Prediction   NoDiabetes Diabetes
 
             Reference
 Prediction   NoDiabetes Diabetes
-  NoDiabetes      64470     1160
-  Diabetes         9362     1112
+  NoDiabetes      64463     1167
+  Diabetes         9322     1152
                                           
-               Accuracy : 0.8617          
-                 95% CI : (0.8593, 0.8642)
-    No Information Rate : 0.9701          
+               Accuracy : 0.8622          
+                 95% CI : (0.8597, 0.8646)
+    No Information Rate : 0.9695          
     P-Value [Acc &gt; NIR] : 1               
                                           
-                  Kappa : 0.1319          
+                  Kappa : 0.137           
                                           
  Mcnemar's Test P-Value : &lt;2e-16          
                                           
-            Sensitivity : 0.8732          
-            Specificity : 0.4894          
-         Pos Pred Value : 0.9823          
-         Neg Pred Value : 0.1062          
-             Prevalence : 0.9701          
-         Detection Rate : 0.8471          
+            Sensitivity : 0.8737          
+            Specificity : 0.4968          
+         Pos Pred Value : 0.9822          
+         Neg Pred Value : 0.1100          
+             Prevalence : 0.9695          
+         Detection Rate : 0.8470          
    Detection Prevalence : 0.8624          
-      Balanced Accuracy : 0.6813          
+      Balanced Accuracy : 0.6852          
                                           
        'Positive' Class : NoDiabetes      
                                           </code></pre>
